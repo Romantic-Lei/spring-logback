@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+	<property name="LOG_HOME" value="/opt"/>
+	<!-- ConsoleAppender 指定日志输出到控制台 -->
+	<appender name="consoleLog" class="ch.qos.logback.core.ConsoleAppender">
+		<!-- layout 表明输出格式 -->
+        <layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern>%d{yyyy/MM/dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} -- %msg%n</pattern>
+		</layout>
+	</appender>
+	<appender name="fileInfoLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!-- 设置日志文件名 -->
+		<!-- file标签可要可不要，没有时，我们会按照 fileNamePattern 里面的名字生成log文件
+			今天2019-8-2,生成的日志文件为opt/info.log
+			到了2019-8-3，info.log会被重命名为 fileNamePattern 中规定的文件名格式(opt/info.2018-08-02.log)
+			然后重新生成 opt/info.log.以此类推
+		 -->
+		<file>${LOG_HOME}/info.log</file>
+		<encoder>
+			<pattern>%d{yyyy:MM:dd HH/mm/ss.SSS} [%thread] %-5level %logger{36} -- %msg%n</pattern>
+		</encoder>
+		<!--滚动策略-->
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!--日期更改时，显示的日志名-->
+			<fileNamePattern>${LOG_HOME}/info.%d.log</fileNamePattern>
+			<!-- 日志保存的最长时间（天）,必须设置 cleanHistoryOnStart 为 true 才会起效 -->
+			<maxHistory>30</maxHistory>
+			<cleanHistoryOnStart>true</cleanHistoryOnStart>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <!--每个日志文件最大10MB，超过之后会覆盖掉之前的日志文件-->
+            <maxFileSize>10MB</maxFileSize>
+        </triggeringPolicy>
+	</appender>
+	<appender name="fileErrorLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!--添加 范围 过滤-->
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<!-- 指定过滤日志级别，此级别的日志会存在另一个文件中 -->
+			<level>ERROR</level>
+		</filter>
+		<encoder>
+			<pattern>%d -- %msg%n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>C:\opt\error-%d.log</fileNamePattern>
+		</rollingPolicy>
+	</appender>
+	
+	<!-- 指定是否打印某个包下面的日志 -->
+	<!-- 一个 logger 标签有一个强制指定的name属性，可选的 level 属性和可选的 additivity 属性
+		name： 很重要，指定包名或者类名的全路径
+		level： TRACE，DEBUG，INFO，WARN，ERROR，OFF(指定包不打印日志)，ALL中任何一个，并且不区分大小写。如果没有写的话就会继承离他最近的祖先的级别
+	 -->
+	<logger name="com.example.log.logLevelOff" level="OFF" additivity="true"/>
+	
+	<!-- 指定日志输出级别，只有高于此级别的日志才会被输出  -->
+	<root level="info">
+		<appender-ref ref="consoleLog" />
+		<appender-ref ref="fileInfoLog"/>
+		<appender-ref ref="fileErrorLog"/>
+	</root>
+</configuration>
